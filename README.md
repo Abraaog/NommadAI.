@@ -82,11 +82,6 @@ O projeto estará disponível em [http://localhost:3000](http://localhost:3000).
 Atualmente o sistema encontra-se na **Fase 3: Integração e Dinâmica**.
 O foco está em conectar o frontend premium à camada de persistência e habilitar as engines de IA para processamento real de áudio e imagem.
 
----
-
-## 📄 Licença
-
-Privado e Confidencial - Todos os direitos reservados.
 
 ---
-*Desenvolvido por Abraão G. no ecossistema NOMMAD AI.*
+*Desenvolvido por Equipe NOMMAD AI. no ecossistema*
