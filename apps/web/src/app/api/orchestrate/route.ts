@@ -1,0 +1,100 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { runOnboarding, type OnboardingResult } from '@/lib/brain/orchestrator'
+import { requireSession } from '@/lib/supabase/server'
+import { PREVIEW_MODE } from '@/lib/env'
+import { GROQ_CONFIGURED } from '@/lib/groq'
+import { getDb } from '@/lib/db/client'
+import { sessions, identity, behavior, missions, missionTasks } from '@/lib/db/schema'
+import { eq, and } from 'drizzle-orm'
+
+const Body = z.object({
+  rawText: z.string().min(50, 'Texto muito curto'),
+  artistName: z.string().optional(),
+  sessionId: z.string().optional(),
+})
+
+const ORCHESTRATE_PREVIEW = PREVIEW_MODE || !GROQ_CONFIGURED
+
+function previewPipeline(rawText: string) {
+  return {
+    response:
+      `Escutei sua fala. Dá pra ver que tem ambição real aqui, mas também muita narrativa de "tô travado" ` +
+      `que soa mais como proteção do que diagnóstico. Você sabe o que precisa fazer — não é mais conteúdo ` +
+      `genérico. É escolher um ângulo, bater nele por 30 dias, e parar de se diluir. O problema não é falta ` +
+      `de plano. É falta de foco.\n\nTrecho analisado: "${rawText.slice(0, 140)}${rawText.length > 140 ? '...' : ''}"`,
+    mission: {
+      missao: 'Ocupar um único território editorial por 7 dias.',
+      tarefas: [
+        'Escolher UMA frase-âncora que define seu posicionamento e fixar no perfil.',
+        'Publicar 3 reels diferentes batendo no mesmo ângulo, sem repetir formato.',
+        'Responder por DM todo comentário que chegar — tratar tração como relação, não métrica.',
+      ],
+      duracao_dias: 7,
+      criterio_sucesso:
+        'Pelo menos 1 DM perguntando "como contratar" ou "onde escutar mais" até o fim dos 7 dias.',
+    },
+    brain: { nivel: 'intermediario', confronto: 3, degraded: true },
+    _preview: true,
+  }
+}
+
+async function persistOnboarding(
+  userId: string,
+  sessionId: string,
+  rawText: string,
+  result: OnboardingResult,
+) {
+const db = getDb()
+
+  await db.update(missions)
+    .set({ status: 'abandoned' })
+    .where(and(eq(missions.userId, userId), eq(missions.status, 'active')))
+
+  if (result.mission && result.mission.missoes && result.mission.missoes.length > 0) {
+    for (const m of result.mission.missoes) {
+      const missionId = crypto.randomUUID()
+      await db.insert(missions).values({
+        id: missionId,
+        userId,
+        sessionId,
+        titulo: m.titulo,
+        descricao: m.descricao,
+        duracaoDias: Math.ceil(m.prazo_horas / 24),
+        status: 'active',
+        confrontoNivel: result.brain.confronto,
+      })
+    }
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await requireSession()
+    const body = Body.parse(await req.json())
+
+    if (ORCHESTRATE_PREVIEW) {
+      return NextResponse.json(previewPipeline(body.rawText))
+    }
+
+    const sessionId = body.sessionId ?? crypto.randomUUID()
+    const userId = session.user.id
+
+    const result = await runOnboarding(sessionId, body.rawText, body.artistName)
+
+    persistOnboarding(userId, sessionId, body.rawText, result).catch((err) =>
+      console.error('[orchestrate:persist]', err instanceof Error ? err.message : err),
+    )
+
+    return NextResponse.json(result)
+  } catch (err) {
+    if (err instanceof Error && err.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 })
+    }
+    console.error('[orchestrate]', err)
+    return NextResponse.json({ error: 'Pipeline failed' }, { status: 500 })
+  }
+}

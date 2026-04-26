@@ -1,0 +1,24 @@
+# Tcnica de Ralph Loop - NOMMAD AI
+
+"Um homem que tem o objetivo de andar 1000 milhas, toda manh ele precisa acordar, esquecer do seu objetivo e falar: 'Hoje eu vou andar 25 milhas, depois dormir e acordar'."  Ralph Loop
+
+Esta tcnica  a base do desenvolvimento autnomo e modular do NOMMAD AI. Ela garante que cada incremento seja estvel, testado e documentado, evitando a perda de contexto em sistemas complexos.
+
+## Fluxo de Execuo (Quickstart)
+
+1. **Ler PRD**: Sempre comece revisando o arquivo `prd/PRD-M[X]-NOMMAD.md` para entender a tarefa atual e seus requisitos.
+2. **Verificar Progresso**: Consulte `prd/progress.txt` para confirmar qual a prxima tarefa pendente.
+3. **Executar Task Atual**: Foque em UMA nica task por vez. No tente implementar mltiplas funcionalidades simultaneamente.
+4. **Atualizar Progresso**: Ao concluir, marque a task como concluda no `progress.txt` e no PRD.
+5. **Log de Contexto**: Registre o que foi feito no `prd/context.md`.
+6. **Reset de Contexto**: Inicie uma nova sesso/conversa para a prxima task para garantir que o modelo no carregue lixo de contexto de tarefas anteriores.
+
+## Regras de Ouro
+
+- **UMA task por vez**: O foco total aumenta a qualidade e reduz erros de lint/lgica.
+- **Max 10 iteraes por task**: Se uma tarefa no for resolvida em 10 passos, reavalie a complexidade e quebre-a em sub-tasks.
+- **Documentao em Tempo Real**: `progress.txt` e `context.md` so a sua memria. Trate-os como cdigo.
+- **Estabilidade Primeiro**: Nunca avance para a prxima task se a atual tiver erros de build ou TypeScript.
+
+---
+*NOMMAD AI - Operando em alta preciso.*

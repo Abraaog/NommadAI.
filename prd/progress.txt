@@ -1,0 +1,46 @@
+# NOMMAD AI - Progress Tracker
+
+## M1: Vertical Slice
+
+- [x] Task 1: Setup inicial do projeto (Migrado para apps/web)
+- [x] Task 2: Configuração do Banco de Dados
+- [x] Task 3: Dashboard Core (Layout & Navigation)
+- [x] Task 4: Módulo "Chefões" (A&R/CRM)
+- [x] Task 5: Módulo "Timeline Director"
+- [x] Task 6: Módulo "Classificador AI"
+- [x] Task 7: Integração Final e QA
+- [x] Task 8: Analytics & Insights (Bonus)
+
+## M2: Sistema Base
+
+- [x] Task 1: Inteligência de Memória (Memory Engine) (100% concluído)
+- [x] Task 2: Refinamento do Gerador & Hooks (100% concluído)
+- [x] Task 3: Kanban Editorial 2.0 (Linking AI + Breakdown Agent)
+- [/] Task 4: Classifier & Check-in Loop
+- [ ] Task 5: Monetização (Stripe Integration)
+- [x] Task 6: Landing Page & Onboarding
+- [x] Task 7: Limpeza e Consolidação Multi-Agente
+
+## Grouter Cost Telemetry
+
+- [x] Add real market pricing to constants.ts
+- [x] Add monthly cost tracking with BRL in usage.ts
+- [x] Add SSE cost stream endpoint in proxy/server.ts
+- [x] Add odometer display to dashboard.html
+- [x] Add revenue comparison (R$500 threshold)
+- [x] Add projected monthly cost based on daily burn
+- [x] Add sustainability calculation (70% margin)
+- [x] Add Agent Capacity modal with connection details
+- [x] Add test connection button (ping)
+- [x] Add telemetry recording to NOMMAD agents (agent_runs table)
+- [x] Refinement: Chat do Nommad (Bold output, no asterisk dividers, markdown support)
+- [x] Bugfix: Login Profile Fetch (PGRST116 replaced with maybeSingle)
+- [x] Bugfix: Onboarding & Telemetry (Fixed UUID syntax error and Grouter model routing)
+- [x] Bugfix: Onboarding Loop (Fixed profile update/upsert logic and reveal screen skip)
+- [x] Feature: New Profile Fields (Added fase_carreira, nivel_tecnico, arquetipo_estrategico, network to DB and Schema)
+- [x] Refinement: Check-in Editorial 2.0 (Organized bold output, side-mission card, no JSON leaks)
+- [x] Feature: NOMMAD Independent Tracking (Real-time cost calculation and telemetry recording for all agents)
+
+---
+Last Update: 2026-04-26 14:12
+Current Status: NOMMAD Tracking independente concluído e validado. Todos os agentes (JSON e Texto) agora registram tokens e custos reais no banco de dados sem dependência externa do Grouter.
