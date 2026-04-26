@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Next.js build and cache
+.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Production build
+/build
+/dist
+
+# Environment variables (Secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# IDEs and Tools
+.vscode/
+.idea/
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.opencode/
+.agents/
+CLAUDE.md
+AGENTS.md
+
+# Temporary and clones
+_target_repo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Reports and temporary documents
+QA_REPORT_NOMMAD.md
+implementation_plan.md
+task.md
+walkthrough.md
+
+# Drizzle snapshots (optional, keep if team needs them, ignore if personal)
+# drizzle-sql/
+
+# Bun
+61: bun.lockb
+.bun-build/

@@ -1,5 +1,7 @@
 # 🚀 NOMMAD AI — Artist OS
 
+![NOMMAD AI Banner](https://raw.githubusercontent.com/Abraaog/NommadAI./main/public/banner.png) <!-- Placeholder, adjust if you have a real banner -->
+
 > **O Sistema Operacional Definitivo para a Carreira do Novo Artista Digital.**
 
 O **NOMMAD AI** é uma plataforma "Precision OS" projetada especificamente para DJs e artistas que buscam centralizar sua estratégia, produção musical, identidade visual e gestão de negócios em uma única interface unificada e impulsionada por IA.
@@ -16,18 +18,26 @@ O NOMMAD não é apenas um dashboard; é o cérebro da sua carreira artística. 
 *   **🕴️ Chefões (A&R/CRM)**: Gestão profissional de contatos, labels e contratos.
 *   **🎨 Design Studio & Identidade**: Criação de assets visuais e curadoria de marca.
 *   **📊 Meu Negócio & Finanças**: Acompanhamento de royalties, faturamento e performance financeira.
-*   **🧠 Cérebro AI**: Insights estratégicos baseados em dados reais de mercado.
+*   **🧠 Cérebro AI**: Insights estratégicos baseados em dados reais de mercado e telemetria de custo em tempo real.
 *   **📅 Release System**: Gerenciamento de lançamentos com timeline dinâmica (D-30 a D+7).
+
+---
+
+## 💎 Diferenciais NOMMAD
+
+*   **Tracking Independente**: Monitoramento em tempo real de tokens e custos de IA por agente.
+*   **Identidade Baseada em Dados**: Mapeamento de DNA artístico usando memória persistente.
+*   **Voz Diogo O'Band**: Persona de mentoria estratégica agressiva integrada a todos os agentes.
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-*   **Frontend**: Next.js 16 (App Router) + React 19
+*   **Frontend**: Next.js 15+ (App Router) + React 19
 *   **Estilização**: Tailwind CSS v4 (Glassmorphism & High-Fidelity)
 *   **Animações**: Framer Motion
 *   **Database/ORM**: Supabase + Drizzle ORM
-*   **Inteligência**: Integração com APIs de LLM (Claude, Groq) e ComfyUI para design.
+*   **Inteligência**: Integração com APIs Groq (Llama 3.3 70B, 3.1 8B) e Telemetria Nativa.
 
 ---
 
@@ -37,14 +47,14 @@ Siga os passos abaixo para configurar o ambiente de desenvolvimento local.
 
 ### 1. Pré-requisitos
 
-*   **Node.js 18+**
-*   **npm / yarn / pnpm**
+*   **Node.js 20+**
+*   **Bun** (Recomendado para Grouter e Scripts)
 *   **Git**
 
 ### 2. Clonar o Repositório
 
 ```bash
-git clone https://github.com/Abraaog/NommadAI.git
+git clone https://github.com/Abraaog/NommadAI..git
 cd NOMMADAI
 ```
 
@@ -53,7 +63,7 @@ cd NOMMADAI
 ```bash
 npm install
 # ou
-yarn install
+65: bun install
 ```
 
 ### 4. Configurar Variáveis de Ambiente
@@ -82,6 +92,11 @@ O projeto estará disponível em [http://localhost:3000](http://localhost:3000).
 Atualmente o sistema encontra-se na **Fase 3: Integração e Dinâmica**.
 O foco está em conectar o frontend premium à camada de persistência e habilitar as engines de IA para processamento real de áudio e imagem.
 
+---
+
+## 📄 Licença
+
+Privado e Confidencial - Todos os direitos reservados.
 
 ---
-*Desenvolvido por Equipe NOMMAD AI. no ecossistema*
+*Desenvolvido por Abraão G. no ecossistema NOMMAD AI.*
