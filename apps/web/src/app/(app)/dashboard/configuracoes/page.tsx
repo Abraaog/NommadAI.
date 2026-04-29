@@ -1,22 +1,140 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { User, CreditCard, Bell, PlugZap, PlayCircle, Send, Radio, Check, Mail, Lock, ShieldCheck, Globe, Trash2, BarChart3 } from "lucide-react";
+import { User, CreditCard, Bell, PlugZap, PlayCircle, Send, Radio, Check, Mail, Lock, ShieldCheck, Globe, Trash2, BarChart3, Plus, Camera, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { createSupabaseClient } from "@/lib/supabase/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createSupabaseClient();
+
+const AVATARS = [
+  { id: 0, url: "https://api.dicebear.com/7.x/avataaars/svg?seed=6244329a-d304-4b7d-a8e7-7c8bb33afd54" }, // Matheus (Padrão)
+];
 
 export default function ConfiguracoesPage() {
-  const [selectedTab, setSelectedTab] = useState("integracoes");
+  const router = useRouter();
+  const [selectedTab, setSelectedTab] = useState("conta");
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    artistName: "",
+    email: "",
+    avatarUrl: ""
+  });
+
   const [toggle1, setToggle1] = useState(true);
   const [toggle2, setToggle2] = useState(false);
   const [togglePush, setTogglePush] = useState(true);
   const [toggleEmail, setToggleEmail] = useState(false);
   const [toggleTelegram, setToggleTelegram] = useState(true);
+
+  useEffect(() => {
+    async function getInitialData() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          window.location.href = "/login";
+          return;
+        }
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        const finalName = prof?.name || user.user_metadata?.name || user.user_metadata?.full_name || "Artista";
+        const finalArtist = prof?.artist_name || "Artista";
+        const finalAvatar = prof?.avatar_url || AVATARS[0].url;
+
+        setProfile(prof || { name: finalName, artist_name: finalArtist, avatar_url: finalAvatar });
+        setFormData({
+          name: finalName,
+          artistName: finalArtist,
+          email: user.email || "",
+          avatarUrl: finalAvatar
+        });
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    getInitialData();
+  }, []);
+
+  const handleAvatarUpload = async (event: any) => {
+    try {
+      setUploading(true);
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Sanitizar nome do arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        if (uploadError.message.includes("bucket not found")) {
+          throw new Error("Bucket 'avatars' não encontrado no Supabase.");
+        }
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setFormData({ ...formData, avatarUrl: publicUrl });
+      toast.success("Foto carregada com sucesso!");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Erro ao fazer upload da imagem.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          name: formData.name,
+          artist_name: formData.artistName,
+          avatar_url: formData.avatarUrl,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        toast.error("Erro ao salvar: " + error.message);
+      } else {
+        toast.success("Perfil atualizado! Recarregando...");
+        // Pequeno delay para o usuário ver o toast antes do reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } catch (err) {
+      alert("Erro crítico ao salvar.");
+    }
+  };
 
   const tabs = [
     { id: "integracoes", label: "Integrações", icon: PlugZap },
@@ -27,6 +145,14 @@ export default function ConfiguracoesPage() {
   ];
 
   const renderTabContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#FFD700]/20 border-t-[#FFD700] rounded-full animate-spin" />
+        </div>
+      );
+    }
+
     switch (selectedTab) {
       case "integracoes":
         return (
@@ -84,7 +210,7 @@ export default function ConfiguracoesPage() {
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                   </div>
                   <span className="text-xs font-bold text-green-400 uppercase tracking-widest">
-                    Conectado (@vitor_nommad)
+                    Conectado
                   </span>
                 </div>
                 <button className="px-4 py-2 rounded-lg bg-white/10 border border-white/5 text-white text-sm font-bold hover:bg-white/20 transition-colors">
@@ -153,15 +279,76 @@ export default function ConfiguracoesPage() {
             <div className="flex items-center gap-6">
               <div className="relative group">
                 <div className="w-24 h-24 rounded-2xl bg-white/10 border border-white/10 overflow-hidden flex items-center justify-center">
-                  <User className="w-10 h-10 text-white/20" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Alterar</span>
-                  </div>
+                  {formData.avatarUrl ? (
+                    <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full" />
+                  ) : (
+                    <User className="w-10 h-10 text-white/20" />
+                  )}
                 </div>
               </div>
               <div>
-                <h2 className="text-2xl font-black text-white">Vitor Nommad</h2>
-                <p className="text-white/40 text-sm tracking-widest uppercase font-bold">Produtor Musical / A&R</p>
+                <h2 className="text-2xl font-black text-white">{formData.name || "Matheus"}</h2>
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-white/40 text-[10px] tracking-widest uppercase font-bold">{formData.artistName || "Artista"}</p>
+                  <p className="text-[#FFD700]/60 text-[10px] font-medium">{formData.email}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest px-2">Identidade Visual</h3>
+              <div className="flex flex-wrap gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl">
+                {/* Avatar Padrão */}
+                <button
+                  onClick={() => setFormData({ ...formData, avatarUrl: AVATARS[0].url })}
+                  className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 bg-gradient-to-br from-gray-800 to-gray-900 ${
+                    formData.avatarUrl === AVATARS[0].url 
+                    ? "border-[#FFD700] ring-2 ring-[#FFD700]/20" 
+                    : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <img src={AVATARS[0].url} alt="Padrão" className="w-full h-full object-cover" />
+                  {formData.avatarUrl === AVATARS[0].url && (
+                    <div className="absolute inset-0 bg-[#FFD700]/10 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-[#FFD700]" />
+                    </div>
+                  )}
+                </button>
+
+                {/* Upload Button */}
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={uploading}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 border-dashed border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-[#FFD700]/50 transition-all group ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {uploading ? (
+                      <Loader2 className="w-6 h-6 text-[#FFD700] animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-6 h-6 text-white/40 group-hover:text-[#FFD700] transition-colors" />
+                        <span className="text-[10px] text-white/20 font-bold uppercase mt-1 group-hover:text-[#FFD700]/50">Upload</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Preview de Upload customizado (se houver e não for o padrão) */}
+                {formData.avatarUrl && formData.avatarUrl !== AVATARS[0].url && (
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#FFD700] ring-2 ring-[#FFD700]/20">
+                    <img src={formData.avatarUrl} alt="Custom" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-[#FFD700]/10 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-[#FFD700]" />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -170,14 +357,24 @@ export default function ConfiguracoesPage() {
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Nome Público</label>
                 <div className="relative">
                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                   <input type="text" defaultValue="Vitor Nommad" className="w-full bg-white/5 border border-white/10 rounded-xl px-11 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700]/50 transition-colors" />
+                   <input 
+                    type="text" 
+                    value={formData.name} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-11 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700]/50 transition-colors" 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Email Principal</label>
                 <div className="relative">
                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                   <input type="email" defaultValue="vitor@nommad.ai" className="w-full bg-white/5 border border-white/10 rounded-xl px-11 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700]/50 transition-colors" />
+                   <input 
+                    type="email" 
+                    value={formData.email} 
+                    disabled
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-11 py-3 text-white/40 text-sm focus:outline-none cursor-not-allowed" 
+                  />
                 </div>
               </div>
             </div>
@@ -215,9 +412,12 @@ export default function ConfiguracoesPage() {
                <button className="px-6 py-3 rounded-xl border border-red-500/20 text-red-500/50 text-sm font-bold hover:bg-red-500/5 transition-colors flex items-center gap-2">
                  <Trash2 className="w-4 h-4" /> Deletar Conta
                </button>
-               <button className="px-8 py-3 rounded-xl bg-[#FFD700] text-black text-sm font-bold hover:bg-[#FFD700]/90 transition-colors shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                 Salvar Alterações
-               </button>
+                <button 
+                  onClick={handleSave}
+                  className="px-8 py-3 rounded-xl bg-[#FFD700] text-black text-sm font-bold hover:bg-[#FFD700]/90 transition-colors shadow-[0_0_15px_rgba(255,215,0,0.2)]"
+                >
+                  Salvar Alterações
+                </button>
             </div>
           </motion.div>
         );

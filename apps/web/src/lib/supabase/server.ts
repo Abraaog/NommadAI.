@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { PREVIEW_MODE, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/env'
+import { redirect } from 'next/navigation'
 
 export async function createSupabaseServer() {
   if (PREVIEW_MODE) throw new Error('[nommad:supabase] called createSupabaseServer in PREVIEW_MODE — use getSession() instead')
@@ -41,14 +42,13 @@ export async function getSession() {
   if (PREVIEW_MODE) return FAKE_SESSION
   try {
     const supabase = await createSupabaseServer()
-    const { data: { session } } = await supabase.auth.getSession()
+    // Always verify with getUser() first for security
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     
-    if (!session) return null
+    if (userError || !user) return null
 
-    // For higher security, verify the user with the server
-    const { data: { user }, error } = await supabase.auth.getUser()
-    if (error || !user) return null
-
+    // If we have a user, the session is valid
+    const { data: { session } } = await supabase.auth.getSession()
     return session
   } catch (err) {
     console.error('[nommad:supabase:server] getSession failed:', err instanceof Error ? err.message : String(err))
@@ -58,8 +58,14 @@ export async function getSession() {
 
 export async function requireSession() {
   if (PREVIEW_MODE) return FAKE_SESSION
-  const session = await getSession()
-  if (!session) throw new Error('Unauthorized')
+  const supabase = await createSupabaseServer()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error || !user) redirect('/login')
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) redirect('/login')
+  
   return session
 }
 
@@ -67,6 +73,6 @@ export async function requireUser() {
   if (PREVIEW_MODE) return FAKE_SESSION.user
   const supabase = await createSupabaseServer()
   const { data: { user }, error } = await supabase.auth.getUser()
-  if (error || !user) throw new Error('Unauthorized')
+  if (error || !user) redirect('/login')
   return user
 }
