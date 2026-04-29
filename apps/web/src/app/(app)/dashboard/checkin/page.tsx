@@ -4,6 +4,8 @@ import { profiles, missions, missionTasks } from '@/lib/db/schema'
 import { eq, desc, and } from 'drizzle-orm'
 import { CheckinView } from '@/components/dashboard/checkin/checkin-view'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CheckinPage() {
   const session = await requireSession()
   const db = getDb()

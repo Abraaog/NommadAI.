@@ -20,6 +20,7 @@ export const profiles = pgTable('profiles', {
   plan: text('plan').notNull().default('free'),   // free | pro | premium
   stripeCustomerId: text('stripe_customer_id'),
   configJson: jsonb('config_json'),               // gamification config map (fields filled by user)
+  avatarUrl: text('avatar_url'),                  // URL do avatar selecionado
   xp: integer('xp').default(0),
   np: integer('np').default(0),
   badges: jsonb('badges'),                         // string[]
@@ -145,15 +146,47 @@ export const bossCases = pgTable(
   {
     id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
     userId: uuid('user_id').notNull(),
-    bossId: text('boss_id').notNull(),               // slug do chef\u00e3o
+    bossId: text('boss_id').notNull(),               // slug do chefão
     status: text('status').notNull().default('aberto'), // aberto | em_desafio | conquistado | fechado
     provas: jsonb('provas'),                          // string[]
+    result: text('result'),                           // sucesso | parcial | falha
     feedback: text('feedback'),
+    xpAwarded: integer('xp_awarded').default(0),
+    networkData: jsonb('network_data'),               // Dados extraídos pelo NetworkBuilderAgent
+    contextJson: jsonb('context_json'),               // Memória persistente da IA para este caso
     abertoEm: timestamp('aberto_em', { withTimezone: true }).defaultNow(),
     atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).defaultNow(),
   },
   (t) => ({ userIdx: index('boss_cases_user_idx').on(t.userId) }),
 )
+
+// ----------------------------------------------------------------
+// leaderboard_scores — Ranking baseado nos 4 pilares
+// ----------------------------------------------------------------
+
+export const leaderboardScores = pgTable('leaderboard_scores', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').notNull().unique(),
+  score: integer('score').default(0),
+  executionScore: integer('execution_score').default(0),
+  bossScore: integer('boss_score').default(0),
+  impactScore: integer('impact_score').default(0),
+  evolutionScore: integer('evolution_score').default(0),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+// ----------------------------------------------------------------
+// ranking_snapshots — Histórico de posições
+// ----------------------------------------------------------------
+
+export const rankingSnapshots = pgTable('ranking_snapshots', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').notNull(),
+  score: integer('score').notNull(),
+  position: integer('position').notNull(),
+  period: text('period').notNull(), // semanal | mensal
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
 
 // ----------------------------------------------------------------
 // contacts — Chefões (A&R/CRM)
@@ -190,6 +223,7 @@ export const missions = pgTable('missions', {
   duracaoDias: integer('duracao_dias').default(7),
   status: text('status').notNull().default('active'), // active | completed | abandoned
   confrontoNivel: integer('confronto_nivel'),
+  contextJson: jsonb('context_json'),               // Memória persistente da IA para esta missão
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   completedAt: timestamp('completed_at', { withTimezone: true }),
 })

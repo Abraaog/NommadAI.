@@ -194,16 +194,31 @@ export type RunJsonOptions<T> = {
 }
 
 function extractJson(text: string): string {
-  // Remove possible bold markers that some models insist on adding around/inside JSON
-  let cleaned = text.replace(/\*\*/g, '')
+  let cleaned = text.replace(/\*\*/g, '').replace(/\*/g, '')
   
   const fenced = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenced) return fenced[1].trim()
   
   const firstBrace = cleaned.search(/[\[{]/)
-  if (firstBrace >= 0) return cleaned.slice(firstBrace).trim()
+  if (firstBrace >= 0) cleaned = cleaned.slice(firstBrace)
   
-  return cleaned.trim()
+  cleaned = cleaned.trim()
+  
+  let braceCount = 0
+  let startIdx = -1
+  for (let i = 0; i < cleaned.length; i++) {
+    if (cleaned[i] === '{' || cleaned[i] === '[') {
+      if (startIdx === -1) startIdx = i
+      braceCount++
+    } else if (cleaned[i] === '}' || cleaned[i] === ']') {
+      braceCount--
+      if (braceCount === 0 && startIdx !== -1) {
+        return cleaned.slice(startIdx, i + 1).trim()
+      }
+    }
+  }
+  
+  return cleaned.trim() || text
 }
 
 export async function runJsonAgent<T>({
@@ -213,7 +228,7 @@ export async function runJsonAgent<T>({
   schema,
   temperature = 0.5,
   maxTokens = 2048,
-  retries = 1,
+  retries = 2,
   sessionId = crypto.randomUUID(),
 }: RunJsonOptions<T>): Promise<T> {
   if (!AI_ENABLED) {

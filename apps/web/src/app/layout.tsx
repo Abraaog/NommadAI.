@@ -10,10 +10,15 @@ export const metadata: Metadata = {
   description: "Sistema operacional de carreira para artistas e DJs.",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" data-scroll-behavior="smooth" className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}>
-      <body className="min-h-full bg-neutral-950 text-neutral-100 flex flex-col">{children}</body>
+      <body className="min-h-full bg-neutral-950 text-neutral-100 flex flex-col">
+        {children}
+        <Toaster richColors position="top-right" theme="dark" />
+      </body>
     </html>
   );
 }

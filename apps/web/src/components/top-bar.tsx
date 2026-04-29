@@ -4,14 +4,16 @@ import { Sparkles, Trophy, Coins } from 'lucide-react'
 import { AvatarTile } from '@/components/ui'
 import { avatarUrl } from '@/lib/placeholders'
 import { useGamification } from '@/lib/gamification/store'
+import Link from 'next/link'
 
 type Props = {
   displayName: string
   handle: string
   avatarSeed: string
+  avatarUrl?: string
 }
 
-export function TopBar({ displayName, handle, avatarSeed }: Props) {
+export function TopBar({ displayName, handle, avatarSeed, avatarUrl: customAvatarUrl }: Props) {
   const { stats, hydrated } = useGamification()
 
   const tierLabel =
@@ -81,15 +83,19 @@ export function TopBar({ displayName, handle, avatarSeed }: Props) {
           <span className="text-[10px] text-neutral-500 uppercase font-bold ml-1">NP</span>
         </div>
 
-        {/* Conquistas */}
-        <button type="button" className="p-2 rounded-lg hover:bg-white/5 transition-colors relative group" aria-label="Conquistas">
+        {/* Conquistas / Ranking */}
+        <Link 
+          href="/dashboard/chefoes/ranking"
+          className="p-2 rounded-lg hover:bg-white/5 transition-colors relative group" 
+          aria-label="Ranking e Conquistas"
+        >
           <Trophy size={18} className="text-neutral-400 group-hover:text-yellow-500 transition-colors" />
           {stats.badges.length > 0 && (
             <span className="absolute top-1 right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-[#050507] text-[8px] text-neutral-950 font-bold flex items-center justify-center">
               {stats.badges.length}
             </span>
           )}
-        </button>
+        </Link>
 
         {/* Perfil */}
         <div className="flex items-center gap-3 pl-6 border-l border-white/10">
@@ -97,7 +103,12 @@ export function TopBar({ displayName, handle, avatarSeed }: Props) {
             <p className="text-sm font-bold text-white leading-none truncate max-w-32">{displayName}</p>
             {handle && <p className="text-[10px] text-neutral-500 mt-1 truncate max-w-32">@{handle}</p>}
           </div>
-          <AvatarTile src={avatarUrl(avatarSeed, 'avataaars')} alt={displayName} ring size="md" />
+          <AvatarTile 
+            src={customAvatarUrl || avatarUrl(avatarSeed, 'avataaars')} 
+            alt={displayName} 
+            ring 
+            size="md" 
+          />
         </div>
       </div>
     </header>

@@ -8,7 +8,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Home, Brain, Briefcase, Zap, Calendar, Palette, Kanban,
   Network, Headphones, Rocket, BarChart2, BookOpen, Settings, Swords, X, Menu,
-  Layers, CheckCircle2
+  Layers, CheckCircle2, History
 } from 'lucide-react'
 
 type NavItem = { label: string; href: string; icon: LucideIcon; badge?: string }
@@ -22,6 +22,7 @@ const NAV_CORE: NavItem[] = [
   { label: 'Calendário',    href: '/dashboard/calendario',  icon: Calendar },
   { label: 'Design',        href: '/dashboard/design',      icon: Palette },
   { label: 'Kanban',        href: '/dashboard/kanban',      icon: Kanban },
+  { label: 'Minha Jornada', href: '/dashboard/jornada',    icon: History },
   { label: 'Cérebro',       href: '/dashboard/cerebro',     icon: Network },
   { label: 'Analytics',     href: '/dashboard/analytics',   icon: BarChart2 },
 ]
@@ -89,6 +90,7 @@ export function Sidebar() {
   const path = usePathname()
   const { stats, hydrated } = useGamification()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [showXpDetail, setShowXpDetail] = useState(false)
 
   return (
     <>
@@ -134,11 +136,34 @@ export function Sidebar() {
             <span className="block text-[8px] text-yellow-500/70 tracking-[0.15em] uppercase font-bold leading-none">Artist OS</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           {hydrated && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-              <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-tighter">LVL</span>
-              <span className="text-xs font-black text-white leading-none">{stats.level}</span>
+            <div className="relative">
+              <button
+                onClick={() => setShowXpDetail(!showXpDetail)}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all duration-300 ${showXpDetail ? 'bg-yellow-500/20 border-yellow-500/50' : 'bg-yellow-500/10 border-yellow-500/20'}`}
+              >
+                <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-tighter">LVL</span>
+                <span className="text-xs font-black text-white leading-none">{stats.level}</span>
+              </button>
+
+              {showXpDetail && (
+                <div className="absolute top-12 right-0 w-48 glass-card rounded-xl p-3 z-[70] shadow-2xl border border-white/10 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-[10px] text-neutral-500 uppercase font-bold">Progresso</span>
+                    <span className="text-xs font-mono font-bold text-yellow-500">{stats.xpInLevel} / {stats.xpToNext} XP</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-500 glow-amber transition-all duration-500" 
+                      style={{ width: `${(stats.xpInLevel / stats.xpToNext) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-[9px] text-neutral-400 mt-2 text-center">
+                    Faltam <span className="text-white font-bold">{stats.xpToNext - stats.xpInLevel} XP</span> para o Nível {stats.level + 1}
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <button

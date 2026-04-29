@@ -34,6 +34,11 @@ export const MODELS = {
   brain:      process.env.MODEL_BRAIN || 'llama-3.1-8b-instant',
   identity:   process.env.MODEL_IDENTITY || 'llama-3.3-70b-versatile',
   breakdown:  process.env.MODEL_BREAKDOWN || 'llama-3.1-8b-instant',
+  boss_challenge: process.env.MODEL_BOSS_CHALLENGE || 'llama-3.3-70b-versatile',
+  boss_proof: process.env.MODEL_BOSS_PROOF || 'llama-3.3-70b-versatile',
+  boss_feedback: process.env.MODEL_BOSS_FEEDBACK || 'llama-3.1-8b-instant',
+  boss_network: process.env.MODEL_BOSS_NETWORK || 'llama-3.1-8b-instant',
+  boss_master: process.env.MODEL_BOSS_MASTER || 'llama-3.3-70b-versatile',
 } as const
 
 export type AgentName = keyof typeof MODELS
